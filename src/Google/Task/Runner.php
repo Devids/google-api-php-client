@@ -15,12 +15,15 @@
  * limitations under the License.
  */
 
+namespace Google\Task;
+use Google\Service\ServiceException;
+
 /**
  * A task runner with exponential backoff support.
  *
  * @see https://developers.google.com/drive/web/handle-errors#implementing_exponential_backoff
  */
-class Google_Task_Runner
+class Runner
 {
   const TASK_RETRY_NEVER = 0;
   const TASK_RETRY_ONCE = 1;
@@ -90,7 +93,7 @@ class Google_Task_Runner
    * @param string $name The name of the current task (used for logging)
    * @param callable $action The task to run and possibly retry
    * @param array $arguments The task arguments
-   * @throws Google_Task_Exception when misconfigured
+   * @throws TaskException when misconfigured
    */
   public function __construct(
       $config,
@@ -100,7 +103,7 @@ class Google_Task_Runner
   ) {
     if (isset($config['initial_delay'])) {
       if ($config['initial_delay'] < 0) {
-        throw new Google_Task_Exception(
+        throw new TaskException(
             'Task configuration `initial_delay` must not be negative.'
         );
       }
@@ -110,7 +113,7 @@ class Google_Task_Runner
 
     if (isset($config['max_delay'])) {
       if ($config['max_delay'] <= 0) {
-        throw new Google_Task_Exception(
+        throw new TaskException(
             'Task configuration `max_delay` must be greater than 0.'
         );
       }
@@ -120,7 +123,7 @@ class Google_Task_Runner
 
     if (isset($config['factor'])) {
       if ($config['factor'] <= 0) {
-        throw new Google_Task_Exception(
+        throw new TaskException(
             'Task configuration `factor` must be greater than 0.'
         );
       }
@@ -130,7 +133,7 @@ class Google_Task_Runner
 
     if (isset($config['jitter'])) {
       if ($config['jitter'] <= 0) {
-        throw new Google_Task_Exception(
+        throw new TaskException(
             'Task configuration `jitter` must be greater than 0.'
         );
       }
@@ -140,7 +143,7 @@ class Google_Task_Runner
 
     if (isset($config['retries'])) {
       if ($config['retries'] < 0) {
-        throw new Google_Task_Exception(
+        throw new TaskException(
             'Task configuration `retries` must not be negative.'
         );
       }
@@ -148,7 +151,7 @@ class Google_Task_Runner
     }
 
     if (!is_callable($action)) {
-        throw new Google_Task_Exception(
+        throw new TaskException(
             'Task argument `$action` must be a valid callable.'
         );
     }
@@ -168,18 +171,18 @@ class Google_Task_Runner
     return $this->attempts < $this->maxAttempts;
   }
 
-  /**
-   * Runs the task and (if applicable) automatically retries when errors occur.
-   *
-   * @return mixed
-   * @throws Google_Task_Retryable on failure when no retries are available.
-   */
+    /**
+     * Runs the task and (if applicable) automatically retries when errors occur.
+     * @return mixed
+     * @throws ServiceException
+     * @throws \Exception
+     */
   public function run()
   {
     while ($this->attempt()) {
       try {
         return call_user_func_array($this->action, $this->arguments);
-      } catch (Google_Service_Exception $exception) {
+      } catch (ServiceException $exception) {
         $allowedRetries = $this->allowedRetries(
             $exception->getCode(),
             $exception->getErrors()

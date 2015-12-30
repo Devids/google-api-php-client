@@ -15,7 +15,12 @@
  * limitations under the License.
  */
 
+namespace Google\Http;
+
 use Google\Auth\HttpHandler\HttpHandlerFactory;
+use Google\GoogleClient;
+use Google\Service\ServiceException;
+use Google\Task\Runner;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\RequestException;
 use Psr\Http\Message\RequestInterface;
@@ -24,18 +29,22 @@ use Psr\Http\Message\ResponseInterface;
 /**
  * This class implements the RESTful transport of apiServiceRequest()'s
  */
-class Google_Http_REST
+class REST
 {
-  /**
-   * Executes a Psr\Http\Message\RequestInterface and (if applicable) automatically retries
-   * when errors occur.
-   *
-   * @param Google_Client $client
-   * @param Psr\Http\Message\RequestInterface $req
-   * @return array decoded result
-   * @throws Google_Service_Exception on server side error (ie: not authenticated,
-   *  invalid or malformed post body, invalid url)
-   */
+    /**
+     * Executes a Psr\Http\Message\RequestInterface and (if applicable) automatically retries
+     * when errors occur.
+     *
+     * @param GoogleClient $client
+     * @param RequestInterface $request
+     * @param null $expectedClass
+     * @param array $config
+     * @param null $retryMap
+     * @return array decoded result
+     * @throws \Exception
+     * @throws ServiceException
+     * @internal param RequestInterface $req
+     */
   public static function execute(
       ClientInterface $client,
       RequestInterface $request,
@@ -43,7 +52,7 @@ class Google_Http_REST
       $config = array(),
       $retryMap = null
   ) {
-    $runner = new Google_Task_Runner(
+    $runner = new Runner(
         $config,
         sprintf('%s %s', $request->getMethod(), (string) $request->getUri()),
         array(get_class(), 'doExecute'),
@@ -60,10 +69,10 @@ class Google_Http_REST
   /**
    * Executes a Psr\Http\Message\RequestInterface
    *
-   * @param Google_Client $client
-   * @param Psr\Http\Message\RequestInterface $request
+   * @param GoogleClient $client
+   * @param RequestInterface $request
    * @return array decoded result
-   * @throws Google_Service_Exception on server side error (ie: not authenticated,
+   * @throws ServiceException on server side error (ie: not authenticated,
    *  invalid or malformed post body, invalid url)
    */
   public static function doExecute(ClientInterface $client, RequestInterface $request, $expectedClass = null)
@@ -82,14 +91,16 @@ class Google_Http_REST
     return self::decodeHttpResponse($response, $request, $expectedClass);
   }
 
-  /**
-   * Decode an HTTP Response.
-   * @static
-   * @throws Google_Service_Exception
-   * @param Psr\Http\Message\RequestInterface $response The http response to be decoded.
-   * @param Psr\Http\Message\ResponseInterface $response
-   * @return mixed|null
-   */
+    /**
+     * Decode an HTTP Response.
+     * @static
+     *
+     * @param RequestInterface|ResponseInterface $response
+     * @param RequestInterface $request
+     * @param null $expectedClass
+     * @return mixed|null
+     * @throws ServiceException
+     */
   public static function decodeHttpResponse(
       ResponseInterface $response,
       RequestInterface $request = null,
@@ -120,7 +131,7 @@ class Google_Http_REST
       if (isset($result['error']['errors'])) {
         $errors = $result['error']['errors'];
       }
-      throw new Google_Service_Exception($body, $code, null, $errors);
+      throw new ServiceException($body, $code, null, $errors);
     }
 
     // use "is_null" because "false" is used to explicitly

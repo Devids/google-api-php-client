@@ -14,7 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+namespace Google\Http;
 
+use Google\GoogleClient;
+use Google\Service\ServiceException;
 use GuzzleHttp\Psr7;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
@@ -24,7 +27,7 @@ use Psr\Http\Message\ResponseInterface;
 /**
  * Class to handle batched requests to the Google API service.
  */
-class Google_Http_Batch
+class Batch
 {
   const BATCH_PATH = 'batch';
 
@@ -42,7 +45,7 @@ class Google_Http_Batch
   /** @var Google_Client */
   private $client;
 
-  public function __construct(Google_Client $client)
+  public function __construct(GoogleClient $client)
   {
     $this->client = $client;
     $this->boundary = mt_rand();
@@ -74,13 +77,13 @@ Content-ID: %s
 
 EOF;
 
-    /** @var Google_Http_Request $req */
+    /** @var Request $request */
     foreach ($this->requests as $key => $request) {
       $firstLine = sprintf(
           '%s %s HTTP/%s',
           $request->getMethod(),
           $request->getRequestTarget(),
-          $request->getProtocolVersion()
+          $request->getProtocolVersiíon()
       );
 
       $content = (string) $request->getBody();
@@ -104,7 +107,7 @@ EOF;
 
     $body .= "--{$this->boundary}--";
     $body = trim($body);
-    $url = Google_Client::API_BASE_PATH . '/' . self::BATCH_PATH;
+    $url = GoogleClient::API_BASE_PATH . '/' . self::BATCH_PATH;
     $headers = array(
       'Content-Type' => sprintf('multipart/mixed; boundary=%s', $this->boundary),
       'Content-Length' => strlen($body),
@@ -166,8 +169,8 @@ EOF;
           }
 
           try {
-            $response = Google_Http_REST::decodeHttpResponse($response, $requests[$i-1]);
-          } catch (Google_Service_Exception $e) {
+            $response = REST::decodeHttpResponse($response, $requests[$i-1]);
+          } catch (ServiceException $e) {
             // Store the exception as the response, so successful responses
             // can be processed.
             $response = $e;

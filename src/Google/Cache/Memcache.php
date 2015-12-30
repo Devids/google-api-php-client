@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+namespace Google\Cache;
+
 use Google\Auth\CacheInterface;
 use Psr\Log\LoggerInterface;
 
@@ -28,7 +30,7 @@ use Psr\Log\LoggerInterface;
  *
  * @author Chris Chabot <chabotc@google.com>
  */
-class Google_Cache_Memcache implements CacheInterface
+class Memcache implements CacheInterface
 {
   private $connection = false;
   private $mc = false;
@@ -48,7 +50,7 @@ class Google_Cache_Memcache implements CacheInterface
       $error = "Memcache functions not available";
 
       $this->log('error', $error);
-      throw new Google_Cache_Exception($error);
+      throw new CacheException($error);
     }
 
     $this->host = $host;
@@ -119,7 +121,7 @@ class Google_Cache_Memcache implements CacheInterface
           array('key' => $key, 'var' => $data)
       );
 
-      throw new Google_Cache_Exception("Couldn't store data in cache");
+      throw new CacheException("Couldn't store data in cache");
     }
 
     $this->log(
@@ -160,7 +162,7 @@ class Google_Cache_Memcache implements CacheInterface
     }
 
     if (class_exists("Memcached")) {
-      $this->mc = new Memcached();
+      $this->mc = new \Memcached();
       $this->mc->addServer($this->host, $this->port);
        $this->connection = true;
     } else {
@@ -171,7 +173,7 @@ class Google_Cache_Memcache implements CacheInterface
       $error = "Couldn't connect to memcache server";
 
       $this->log('error', $error);
-      throw new Google_Cache_Exception($error);
+      throw new CacheException($error);
     }
   }
 

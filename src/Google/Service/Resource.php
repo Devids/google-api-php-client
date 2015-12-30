@@ -15,6 +15,12 @@
  * limitations under the License.
  */
 
+namespace Google\Service;
+
+use Google\GoogleException;
+use Google\Http\MediaFileUpload;
+use Google\Model;
+use Google\Utils\UriTemplate;
 use GuzzleHttp\Psr7\Request;
 
 /**
@@ -23,7 +29,7 @@ use GuzzleHttp\Psr7\Request;
  * is available in this service, and if so construct an apiHttpRequest representing it.
  *
  */
-class Google_Service_Resource
+class Resource
 {
   // Valid query parameters that work, but don't appear in discovery.
   private $stackParameters = array(
@@ -89,7 +95,7 @@ class Google_Service_Resource
           )
       );
 
-      throw new Google_Exception(
+      throw new GoogleException(
           "Unknown function: " .
           "{$this->serviceName}->{$this->resourceName}->{$name}()"
       );
@@ -101,7 +107,7 @@ class Google_Service_Resource
     // document as parameter, but we abuse the param entry for storing it.
     $postBody = null;
     if (isset($parameters['postBody'])) {
-      if ($parameters['postBody'] instanceof Google_Model) {
+      if ($parameters['postBody'] instanceof Model) {
         // In the cases the post body is an existing object, we want
         // to use the smart method to create a simple object for
         // for JSONification.
@@ -144,7 +150,7 @@ class Google_Service_Resource
                 'parameter' => $key
             )
         );
-        throw new Google_Exception("($name) unknown parameter: '$key'");
+        throw new GoogleException("($name) unknown parameter: '$key'");
       }
     }
 
@@ -162,7 +168,7 @@ class Google_Service_Resource
                 'parameter' => $paramName
             )
         );
-        throw new Google_Exception("($name) missing required param: '$paramName'");
+        throw new GoogleException("($name) missing required param: '$paramName'");
       }
       if (isset($parameters[$paramName])) {
         $value = $parameters[$paramName];
@@ -217,7 +223,7 @@ class Google_Service_Resource
         ? $parameters['mimeType']['value']
         : 'application/octet-stream';
       $data = $parameters['data']['value'];
-      $upload = new Google_Http_MediaFileUpload($this->client, $request, $mimeType, $data);
+      $upload = new MediaFileUpload($this->client, $request, $mimeType, $data);
 
       // pull down the modified request
       $request = $upload->getRequest();
@@ -283,7 +289,7 @@ class Google_Service_Resource
     }
 
     if (count($uriTemplateVars)) {
-      $uriTemplateParser = new Google_Utils_UriTemplate();
+      $uriTemplateParser = new UriTemplate();
       $requestUrl = $uriTemplateParser->parse($requestUrl, $uriTemplateVars);
     }
 

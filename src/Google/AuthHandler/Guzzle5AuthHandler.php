@@ -1,5 +1,7 @@
 <?php
 
+namespace Google\AuthHandler;
+
 use Google\Auth\CacheInterface;
 use Google\Auth\CredentialsLoader;
 use Google\Auth\HttpHandler\HttpHandlerFactory;
@@ -12,7 +14,7 @@ use GuzzleHttp\ClientInterface;
 /**
 *
 */
-class Google_AuthHandler_Guzzle5AuthHandler
+class Guzzle5AuthHandler
 {
   protected $cache;
 

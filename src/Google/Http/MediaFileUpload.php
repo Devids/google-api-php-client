@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+namespace Google\Http;
+
+use Google\GoogleClient;
+use Google\GoogleException;
 use GuzzleHttp\Psr7;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Uri;
@@ -24,7 +28,7 @@ use Psr\Http\Message\RequestInterface;
  * Manage large file uploads, which may be media but can be any type
  * of sizable data.
  */
-class Google_Http_MediaFileUpload
+class MediaFileUpload
 {
   const UPLOAD_MEDIA_TYPE = 'media';
   const UPLOAD_MULTIPART_TYPE = 'multipart';
@@ -54,7 +58,7 @@ class Google_Http_MediaFileUpload
   /** @var Google_Client */
   private $client;
 
-  /** @var Psr\Http\Message\RequestInterface */
+  /** @var RequestInterface */
   private $request;
 
   /** @var string */
@@ -67,6 +71,8 @@ class Google_Http_MediaFileUpload
   private $httpResultCode;
 
   /**
+   * @param GoogleClient $client
+   * @param RequestInterface $request
    * @param $mimeType string
    * @param $data string The bytes you want to upload.
    * @param $resumable bool
@@ -74,7 +80,7 @@ class Google_Http_MediaFileUpload
    * only used if resumable=True
    */
   public function __construct(
-      Google_Client $client,
+      GoogleClient $client,
       RequestInterface $request,
       $mimeType,
       $data,
@@ -114,6 +120,7 @@ class Google_Http_MediaFileUpload
    * Send the next part of the file to upload.
    * @param [$chunk] the next set of bytes to send. If false will used $data passed
    * at construct time.
+   * @return false|mixed
    */
   public function nextChunk($chunk = false)
   {
@@ -150,14 +157,15 @@ class Google_Http_MediaFileUpload
   }
 
   /**
-  * Sends a PUT-Request to google drive and parses the response,
-  * setting the appropiate variables from the response()
-  *
-  * @param Google_Http_Request $httpRequest the Reuqest which will be send
-  *
-  * @return false|mixed false when the upload is unfinished or the decoded http response
-  *
-  */
+   * Sends a PUT-Request to google drive and parses the response,
+   * setting the appropiate variables from the response()
+   *
+   * @param RequestInterface $request
+   * @return false|mixed false when the upload is unfinished or the decoded http response
+   *
+   * @internal param Request $httpRequest the Reuqest which will be send
+   *
+   */
   private function makePutRequest(RequestInterface $request)
   {
     $response = $this->client->execute($request);
@@ -178,12 +186,13 @@ class Google_Http_MediaFileUpload
       return false;
     }
 
-    return Google_Http_REST::decodeHttpResponse($response, $this->request);
+    return REST::decodeHttpResponse($response, $this->request);
   }
 
   /**
    * Resume a previously unfinished upload
    * @param $resumeUri the resume-URI of the unfinished, resumable upload.
+   * @return false|mixed
    */
   public function resume($resumeUri)
   {
@@ -202,7 +211,7 @@ class Google_Http_MediaFileUpload
   }
 
   /**
-   * @return Psr\Http\Message\RequestInterface $request
+   * @return RequestInterface $request
    * @visible for testing
    */
   private function process()
@@ -325,7 +334,7 @@ class Google_Http_MediaFileUpload
     $error = "Failed to start the resumable upload (HTTP {$message})";
     $this->client->getLogger()->error($error);
 
-    throw new Google_Exception($error);
+    throw new GoogleException($error);
   }
 
   private function transformToUploadUrl()

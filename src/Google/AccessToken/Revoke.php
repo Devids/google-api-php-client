@@ -1,5 +1,7 @@
 <?php
 
+
+namespace Google\AccessToken;
 /*
  * Copyright 2008 Google Inc.
  *
@@ -17,6 +19,7 @@
  */
 
 use Google\Auth\HttpHandler\HttpHandlerFactory;
+use Google\GoogleClient;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Psr7;
 use GuzzleHttp\Psr7\Request;
@@ -25,10 +28,10 @@ use GuzzleHttp\Psr7\Request;
  * Wrapper around Google Access Tokens which provides convenience functions
  *
  */
-class Google_AccessToken_Revoke
+class Revoke
 {
   /**
-   * @var GuzzleHttp\ClientInterface The http client
+   * @var ClientInterface The http client
    */
   private $http;
 
@@ -59,7 +62,7 @@ class Google_AccessToken_Revoke
     $body = Psr7\stream_for(http_build_query(array('token' => $tokenString)));
     $request = new Request(
         'POST',
-        Google_Client::OAUTH2_REVOKE_URI,
+        GoogleClient::OAUTH2_REVOKE_URI,
         [
           'Cache-Control' => 'no-store',
           'Content-Type'  => 'application/x-www-form-urlencoded',
