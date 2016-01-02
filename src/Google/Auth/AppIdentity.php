@@ -15,28 +15,29 @@
  * limitations under the License.
  */
 
+namespace Google\Auth;
+
 /*
  * WARNING - this class depends on the Google App Engine PHP library
  * which is 5.3 and above only, so if you include this in a PHP 5.2
  * setup or one without 5.3 things will blow up.
  */
 use google\appengine\api\app_identity\AppIdentityService;
+use Google\Client;
+use Google\Http\Request;
 
-if (!class_exists('Google_Client')) {
-  require_once dirname(__FILE__) . '/../autoload.php';
-}
 
 /**
  * Authentication via the Google App Engine App Identity service.
  */
-class Google_Auth_AppIdentity extends Google_Auth_Abstract
+class AppIdentity extends AuthAbstract
 {
   const CACHE_PREFIX = "Google_Auth_AppIdentity::";
   private $client;
   private $token = false;
   private $tokenScopes = false;
 
-  public function __construct(Google_Client $client, $config = null)
+  public function __construct(Client $client, $config = null)
   {
     $this->client = $client;
   }
@@ -85,23 +86,23 @@ class Google_Auth_AppIdentity extends Google_Auth_Abstract
     }
   }
 
-  /**
-   * Perform an authenticated / signed apiHttpRequest.
-   * This function takes the apiHttpRequest, calls apiAuth->sign on it
-   * (which can modify the request in what ever way fits the auth mechanism)
-   * and then calls apiCurlIO::makeRequest on the signed request
-   *
-   * @param Google_Http_Request $request
-   * @return Google_Http_Request The resulting HTTP response including the
-   * responseHttpCode, responseHeaders and responseBody.
-   */
-  public function authenticatedRequest(Google_Http_Request $request)
+    /**
+     * Perform an authenticated / signed apiHttpRequest.
+     * This function takes the apiHttpRequest, calls apiAuth->sign on it
+     * (which can modify the request in what ever way fits the auth mechanism)
+     * and then calls apiCurlIO::makeRequest on the signed request
+     *
+     * @param Request $request
+     * @return Request The resulting HTTP response including the
+     * responseHttpCode, responseHeaders and responseBody.
+     */
+  public function authenticatedRequest(Request $request)
   {
     $request = $this->sign($request);
     return $this->client->getIo()->makeRequest($request);
   }
 
-  public function sign(Google_Http_Request $request)
+  public function sign(Request $request)
   {
     if (!$this->token) {
       // No token, so nothing to do.

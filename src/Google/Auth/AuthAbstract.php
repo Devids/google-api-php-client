@@ -15,24 +15,23 @@
  * limitations under the License.
  */
 
-if (!class_exists('Google_Client')) {
-  require_once dirname(__FILE__) . '/../autoload.php';
-}
+namespace Google\Auth;
+use Google\Http\Request;
 
 /**
  * Abstract class for the Authentication in the API client
  * @author Chris Chabot <chabotc@google.com>
  *
  */
-abstract class Google_Auth_Abstract
+abstract class AuthAbstract
 {
   /**
    * An utility function that first calls $this->auth->sign($request) and then
    * executes makeRequest() on that signed request. Used for when a request
    * should be authenticated
-   * @param Google_Http_Request $request
-   * @return Google_Http_Request $request
+   * @param Request $request
+   * @return Request $request
    */
-  abstract public function authenticatedRequest(Google_Http_Request $request);
-  abstract public function sign(Google_Http_Request $request);
+  abstract public function authenticatedRequest(Request $request);
+  abstract public function sign(Request $request);
 }

@@ -15,40 +15,48 @@
  * limitations under the License.
  */
 
-if (!class_exists('Google_Client')) {
-  require_once dirname(__FILE__) . '/autoload.php';
-}
+namespace Google;
+use Google\Auth\AssertionCredentials;
+use Google\Auth\AuthAbstract;
+use Google\Auth\AuthException;
+use Google\Auth\OAuth2;
+use Google\Cache\CacheAbstract;
+use Google\Http\Batch;
+use Google\Http\Request;
+use Google\Http\REST;
+use Google\IO\IOAbstract;
+use Google\Logger\LoggerAbstract;
 
 /**
  * The Google API Client
  * http://code.google.com/p/google-api-php-client/
  */
-class Google_Client
+class Client
 {
   const LIBVER = "1.1.5";
   const USER_AGENT_SUFFIX = "google-api-php-client/";
   /**
-   * @var Google_Auth_Abstract $auth
+   * @var AuthAbstract $auth
    */
   private $auth;
 
   /**
-   * @var Google_IO_Abstract $io
+   * @var IOAbstract $io
    */
   private $io;
 
   /**
-   * @var Google_Cache_Abstract $cache
+   * @var CacheAbstract $cache
    */
   private $cache;
 
   /**
-   * @var Google_Config $config
+   * @var Config $config
    */
   private $config;
 
   /**
-   * @var Google_Logger_Abstract $logger
+   * @var LoggerAbstract $logger
    */
   private $logger;
 
@@ -70,14 +78,14 @@ class Google_Client
   /**
    * Construct the Google Client.
    *
-   * @param $config Google_Config or string for the ini file to load
+   * @param $config Config or string for the ini file to load
    */
   public function __construct($config = null)
   {
     if (is_string($config) && strlen($config)) {
-      $config = new Google_Config($config);
-    } else if ( !($config instanceof Google_Config)) {
-      $config = new Google_Config();
+      $config = new Config($config);
+    } else if ( !($config instanceof Config)) {
+      $config = new Config();
 
       if ($this->isAppEngine()) {
         // Automatically use Memcache if we're in AppEngine.
@@ -90,7 +98,7 @@ class Google_Client
       }
     }
 
-    if ($config->getIoClass() == Google_Config::USE_AUTO_IO_SELECTION) {
+    if ($config->getIoClass() == Config::USE_AUTO_IO_SELECTION) {
       if (function_exists('curl_version') && function_exists('curl_exec')
           && !$this->isAppEngine()) {
         $config->setIoClass("Google_IO_Curl");
@@ -144,14 +152,14 @@ class Google_Client
     $data = json_decode(file_get_contents($jsonLocation));
     if (isset($data->type) && $data->type == 'service_account') {
       // Service Account format.
-      $cred = new Google_Auth_AssertionCredentials(
+      $cred = new AssertionCredentials(
           $data->client_email,
           $scopes,
           $data->private_key
       );
       return $cred;
     } else {
-      throw new Google_Exception("Invalid service account JSON file.");
+      throw new GoogleException("Invalid service account JSON file.");
     }
   }
 
@@ -161,14 +169,14 @@ class Google_Client
    * the "Download JSON" button on in the Google Developer
    * Console.
    * @param string $json the configuration json
-   * @throws Google_Exception
+   * @throws GoogleException
    */
   public function setAuthConfig($json)
   {
     $data = json_decode($json);
     $key = isset($data->installed) ? 'installed' : 'web';
     if (!isset($data->$key)) {
-      throw new Google_Exception("Invalid client secret JSON file.");
+      throw new GoogleException("Invalid client secret JSON file.");
     }
     $this->setClientId($data->$key->client_id);
     $this->setClientSecret($data->$key->client_secret);
@@ -197,7 +205,7 @@ class Google_Client
   public function prepareScopes()
   {
     if (empty($this->requestedScopes)) {
-      throw new Google_Auth_Exception("No scopes specified");
+      throw new AuthException("No scopes specified");
     }
     $scopes = implode(' ', $this->requestedScopes);
     return $scopes;
@@ -222,9 +230,9 @@ class Google_Client
 
   /**
    * Set the authenticator object
-   * @param Google_Auth_Abstract $auth
+   * @param AuthAbstract $auth
    */
-  public function setAuth(Google_Auth_Abstract $auth)
+  public function setAuth(AuthAbstract $auth)
   {
     $this->config->setAuthClass(get_class($auth));
     $this->auth = $auth;
@@ -232,9 +240,9 @@ class Google_Client
 
   /**
    * Set the IO object
-   * @param Google_IO_Abstract $io
+   * @param GIOAbstract $io
    */
-  public function setIo(Google_IO_Abstract $io)
+  public function setIo(IOAbstract $io)
   {
     $this->config->setIoClass(get_class($io));
     $this->io = $io;
@@ -242,9 +250,9 @@ class Google_Client
 
   /**
    * Set the Cache object
-   * @param Google_Cache_Abstract $cache
+   * @param CacheAbstract $cache
    */
-  public function setCache(Google_Cache_Abstract $cache)
+  public function setCache(CacheAbstract $cache)
   {
     $this->config->setCacheClass(get_class($cache));
     $this->cache = $cache;
@@ -252,9 +260,9 @@ class Google_Client
 
   /**
    * Set the Logger object
-   * @param Google_Logger_Abstract $logger
+   * @param LoggerAbstract $logger
    */
-  public function setLogger(Google_Logger_Abstract $logger)
+  public function setLogger(LoggerAbstract $logger)
   {
     $this->config->setLoggerClass(get_class($logger));
     $this->logger = $logger;
@@ -494,15 +502,15 @@ class Google_Client
    */
   public function verifySignedJwt($id_token, $cert_location, $audience, $issuer, $max_expiry = null)
   {
-    $auth = new Google_Auth_OAuth2($this);
+    $auth = new OAuth2($this);
     $certs = $auth->retrieveCertsFromLocation($cert_location);
     return $auth->verifySignedJwtWithCerts($id_token, $certs, $audience, $issuer, $max_expiry);
   }
 
   /**
-   * @param $creds Google_Auth_AssertionCredentials
+   * @param $creds AssertionCredentials
    */
-  public function setAssertionCredentials(Google_Auth_AssertionCredentials $creds)
+  public function setAssertionCredentials(AssertionCredentials $creds)
   {
     $this->getAuth()->setAssertionCredentials($creds);
   }
@@ -575,12 +583,12 @@ class Google_Client
    * Helper method to execute deferred HTTP requests.
    *
    * @param $request Google_Http_Request|Google_Http_Batch
-   * @throws Google_Exception
-   * @return object of the type of the expected class or array.
+   * @return object
+   * @throws GoogleException
    */
   public function execute($request)
   {
-    if ($request instanceof Google_Http_Request) {
+    if ($request instanceof Request) {
       $request->setUserAgent(
           $this->getApplicationName()
           . " " . self::USER_AGENT_SUFFIX
@@ -590,11 +598,11 @@ class Google_Client
         $request->enableGzip();
       }
       $request->maybeMoveParametersToBody();
-      return Google_Http_REST::execute($this, $request);
-    } else if ($request instanceof Google_Http_Batch) {
+      return REST::execute($this, $request);
+    } else if ($request instanceof Batch) {
       return $request->execute();
     } else {
-      throw new Google_Exception("Do not know how to execute this type of object.");
+      throw new GoogleException("Do not know how to execute this type of object.");
     }
   }
 
@@ -608,7 +616,7 @@ class Google_Client
   }
 
   /**
-   * @return Google_Auth_Abstract Authentication implementation
+   * @return AuthAbstract Authentication implementation
    */
   public function getAuth()
   {
@@ -620,7 +628,7 @@ class Google_Client
   }
 
   /**
-   * @return Google_IO_Abstract IO implementation
+   * @return IOAbstract IO implementation
    */
   public function getIo()
   {
@@ -632,7 +640,7 @@ class Google_Client
   }
 
   /**
-   * @return Google_Cache_Abstract Cache implementation
+   * @return CacheAbstract Cache implementation
    */
   public function getCache()
   {
@@ -644,7 +652,7 @@ class Google_Client
   }
 
   /**
-   * @return Google_Logger_Abstract Logger implementation
+   * @return LoggerAbstract Logger implementation
    */
   public function getLogger()
   {

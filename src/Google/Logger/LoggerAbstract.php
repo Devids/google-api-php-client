@@ -15,9 +15,8 @@
  * limitations under the License.
  */
 
-if (!class_exists('Google_Client')) {
-  require_once dirname(__FILE__) . '/../autoload.php';
-}
+namespace Google\Logger;
+use Google\Client;
 
 /**
  * Abstract logging class based on the PSR-3 standard.
@@ -27,7 +26,7 @@ if (!class_exists('Google_Client')) {
  *
  * @see https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-3-logger-interface.md
  */
-abstract class Google_Logger_Abstract
+abstract class LoggerAbstract
 {
   /**
    * Default log format
@@ -118,9 +117,9 @@ abstract class Google_Logger_Abstract
   protected $allowNewLines = false;
 
   /**
-   * @param Google_Client $client  The current Google client
+   * @param Client $client  The current Google client
    */
-  public function __construct(Google_Client $client)
+  public function __construct(Client $client)
   {
     $this->setLevel(
         $client->getClassConfig('Google_Logger_Abstract', 'level')
@@ -261,9 +260,10 @@ abstract class Google_Logger_Abstract
   /**
    * Logs with an arbitrary level.
    *
-   * @param mixed $level    The log level
+   * @param mixed $level The log level
    * @param string $message The log message
-   * @param array $context  The log context
+   * @param array $context The log context
+   * @return bool
    */
   public function log($level, $message, array $context = array())
   {
@@ -277,7 +277,7 @@ abstract class Google_Logger_Abstract
             'message' => $message,
             'context' => $context,
             'level' => strtoupper($levelName),
-            'datetime' => new DateTime(),
+            'datetime' => new \DateTime(),
         )
     );
 
@@ -360,7 +360,7 @@ abstract class Google_Logger_Abstract
       );
     }
 
-    if ($value instanceof DateTime) {
+    if ($value instanceof \DateTime) {
       return $value->format($this->dateFormat);
     }
 
@@ -382,7 +382,7 @@ abstract class Google_Logger_Abstract
    *
    * @param  mixed $level   The logging level
    * @return integer $level The normalized level
-   * @throws Google_Logger_Exception If $level is invalid
+   * @throws LoggerException If $level is invalid
    */
   protected function normalizeLevel($level)
   {
@@ -394,7 +394,7 @@ abstract class Google_Logger_Abstract
       return self::$levels[$level];
     }
 
-    throw new Google_Logger_Exception(
+    throw new LoggerException(
         sprintf("Unknown LogLevel: '%s'", $level)
     );
   }

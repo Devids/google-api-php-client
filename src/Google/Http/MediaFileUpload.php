@@ -15,15 +15,16 @@
  * limitations under the License.
  */
 
-if (!class_exists('Google_Client')) {
-  require_once dirname(__FILE__) . '/../autoload.php';
-}
+namespace Google\Http;
+use Google\Client;
+use Google\GoogleException;
+use Google\Utils;
 
 /**
  * Manage large file uploads, which may be media but can be any type
  * of sizable data.
  */
-class Google_Http_MediaFileUpload
+class MediaFileUpload
 {
   const UPLOAD_MEDIA_TYPE = 'media';
   const UPLOAD_MULTIPART_TYPE = 'multipart';
@@ -50,10 +51,10 @@ class Google_Http_MediaFileUpload
   /** @var int $progress */
   private $progress;
 
-  /** @var Google_Client */
+  /** @var Client */
   private $client;
 
-  /** @var Google_Http_Request */
+  /** @var Request */
   private $request;
 
   /** @var string */
@@ -66,15 +67,18 @@ class Google_Http_MediaFileUpload
   private $httpResultCode;
 
   /**
+   * @param Client $client
+   * @param Request $request
    * @param $mimeType string
    * @param $data string The bytes you want to upload.
    * @param $resumable bool
    * @param bool $chunkSize File will be uploaded in chunks of this many bytes.
    * only used if resumable=True
+   * @param bool $boundary
    */
   public function __construct(
-      Google_Client $client,
-      Google_Http_Request $request,
+      Client $client,
+      Request $request,
       $mimeType,
       $data,
       $resumable = false,
@@ -129,12 +133,12 @@ class Google_Http_MediaFileUpload
   * Sends a PUT-Request to google drive and parses the response,
   * setting the appropiate variables from the response()
   *
-  * @param Google_Http_Request $httpRequest the Reuqest which will be send
+  * @param Request $httpRequest the Reuqest which will be send
   *
   * @return false|mixed false when the upload is unfinished or the decoded http response
   *
   */
-  private function makePutRequest(Google_Http_Request $httpRequest)
+  private function makePutRequest(Request $httpRequest)
   {
     if ($this->client->getClassConfig("Google_Http_Request", "enable_gzip_for_uploads")) {
       $httpRequest->enableGzip();
@@ -161,13 +165,16 @@ class Google_Http_MediaFileUpload
       // No problems, but upload not complete.
       return false;
     } else {
-      return Google_Http_REST::decodeHttpResponse($response, $this->client);
+      return REST::decodeHttpResponse($response, $this->client);
     }
   }
 
   /**
    * Send the next part of the file to upload.
-   * @param [$chunk] the next set of bytes to send. If false will used $data passed
+   * @param bool $chunk
+   * @return false|mixed
+   * @throws GoogleException
+   * @internal param $ [$chunk] the next set of bytes to send. If false will used $data passed
    * at construct time.
    */
   public function nextChunk($chunk = false)
@@ -187,7 +194,7 @@ class Google_Http_MediaFileUpload
       'expect' => '',
     );
 
-    $httpRequest = new Google_Http_Request(
+    $httpRequest = new Request(
         $this->resumeUri,
         'PUT',
         $headers,
@@ -199,6 +206,7 @@ class Google_Http_MediaFileUpload
   /**
    * Resume a previously unfinished upload
    * @param $resumeUri the resume-URI of the unfinished, resumable upload.
+   * @return false|mixed
    */
   public function resume($resumeUri)
   {
@@ -207,7 +215,7 @@ class Google_Http_MediaFileUpload
        'content-range' => "bytes */$this->size",
        'content-length' => 0,
      );
-     $httpRequest = new Google_Http_Request(
+     $httpRequest = new Request(
          $this->resumeUri,
          'PUT',
          $headers
@@ -304,7 +312,7 @@ class Google_Http_MediaFileUpload
     if ($body) {
       $headers = array(
         'content-type' => 'application/json; charset=UTF-8',
-        'content-length' => Google_Utils::getStrLen($body),
+        'content-length' => Utils::getStrLen($body),
         'x-upload-content-type' => $this->mimeType,
         'x-upload-content-length' => $this->size,
         'expect' => '',
@@ -331,7 +339,7 @@ class Google_Http_MediaFileUpload
 
     $error = "Failed to start the resumable upload (HTTP {$message})";
     $this->client->getLogger()->error($error);
-    throw new Google_Exception($error);
+    throw new GoogleException($error);
   }
 
   public function setChunkSize($chunkSize)

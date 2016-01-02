@@ -15,16 +15,15 @@
  * limitations under the License.
  */
 
-if (!class_exists('Google_Client')) {
-  require_once dirname(__FILE__) . '/../autoload.php';
-}
+namespace Google\Logger;
+use Google\Client;
 
 /**
  * File logging class based on the PSR-3 standard.
  *
  * This logger writes to a PHP stream resource.
  */
-class Google_Logger_File extends Google_Logger_Abstract
+class File extends LoggerAbstract
 {
   /**
    * @var string|resource $file Where logs are written
@@ -51,13 +50,13 @@ class Google_Logger_File extends Google_Logger_Abstract
   /**
    * {@inheritdoc}
    */
-  public function __construct(Google_Client $client)
+  public function __construct(Client $client)
   {
     parent::__construct($client);
 
     $file = $client->getClassConfig('Google_Logger_File', 'file');
     if (!is_string($file) && !is_resource($file)) {
-      throw new Google_Logger_Exception(
+      throw new LoggerException(
           'File logger requires a filename or a valid file pointer'
       );
     }
@@ -79,7 +78,7 @@ class Google_Logger_File extends Google_Logger_Abstract
     if (is_string($this->file)) {
       $this->open();
     } elseif (!is_resource($this->file)) {
-      throw new Google_Logger_Exception('File pointer is no longer available');
+      throw new LoggerException('File pointer is no longer available');
     }
 
     if ($this->lock) {
@@ -95,8 +94,8 @@ class Google_Logger_File extends Google_Logger_Abstract
 
   /**
    * Opens the log for writing.
-   *
    * @return resource
+   * @throws LoggerException
    */
   private function open()
   {
@@ -113,7 +112,7 @@ class Google_Logger_File extends Google_Logger_Abstract
 
     // Handles trapped `fopen()` errors.
     if ($this->trappedErrorNumber) {
-      throw new Google_Logger_Exception(
+      throw new LoggerException(
           sprintf(
               "Logger Error: '%s'",
               $this->trappedErrorString

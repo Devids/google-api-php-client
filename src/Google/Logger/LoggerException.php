@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2013 Google Inc.
+ * Copyright 2014 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,9 @@
  * limitations under the License.
  */
 
-if (!class_exists('Google_Client')) {
-  require_once dirname(__FILE__) . '/../autoload.php';
-}
+namespace Google\Logger;
 
-class Google_Cache_Exception extends Google_Exception
-{
+use Google\GoogleException;
+
+class LoggerException extends GoogleException {
 }

@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-if (!class_exists('Google_Client')) {
-  require_once dirname(__FILE__) . '/../autoload.php';
-}
+namespace Google\Auth;
 
-class Google_Auth_Exception extends Google_Exception
+use Google\GoogleException;
+
+class AuthException extends GoogleException
 {
 }

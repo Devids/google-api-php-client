@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2014 Google Inc.
+ * Copyright 2011 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,18 @@
  * limitations under the License.
  */
 
-if (!class_exists('Google_Client')) {
-  require_once dirname(__FILE__) . '/../autoload.php';
-}
+namespace Google\Verifier;
 
-class Google_Logger_Exception extends Google_Exception
+/**
+ * Verifies signatures.
+ *
+ * @author Brian Eaton <beaton@google.com>
+ */
+abstract class VerifierAbstract
 {
+  /**
+   * Checks a signature, returns true if the signature is correct,
+   * false otherwise.
+   */
+  abstract public function verify($data, $signature);
 }

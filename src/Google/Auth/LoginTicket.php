@@ -15,16 +15,14 @@
  * limitations under the License.
  */
 
-if (!class_exists('Google_Client')) {
-  require_once dirname(__FILE__) . '/../autoload.php';
-}
+namespace Google\Auth;
 
 /**
  * Class to hold information about an authenticated login.
  *
  * @author Brian Eaton <beaton@google.com>
  */
-class Google_Auth_LoginTicket
+class LoginTicket
 {
   const USER_ATTR = "sub";
 
@@ -48,7 +46,7 @@ class Google_Auth_LoginTicket
 
   /**
    * Returns the numeric identifier for the user.
-   * @throws Google_Auth_Exception
+   * @throws AuthException
    * @return
    */
   public function getUserId()
@@ -56,7 +54,7 @@ class Google_Auth_LoginTicket
     if (array_key_exists(self::USER_ATTR, $this->payload)) {
       return $this->payload[self::USER_ATTR];
     }
-    throw new Google_Auth_Exception("No user_id in token");
+    throw new AuthException("No user_id in token");
   }
 
   /**

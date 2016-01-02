@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2013 Google Inc.
+ * Copyright 2011 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,17 @@
  * limitations under the License.
  */
 
-class Google_Exception extends Exception
+namespace Google\Signer;
+
+/**
+ * Signs data.
+ *
+ * @author Brian Eaton <beaton@google.com>
+ */
+abstract class SignerAbstract
 {
+  /**
+   * Signs data, returns the signature as binary data.
+   */
+  abstract public function sign($data);
 }

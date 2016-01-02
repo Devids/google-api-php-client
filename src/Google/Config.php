@@ -15,10 +15,11 @@
  * limitations under the License.
  */
 
+namespace Google;
 /**
  * A class to contain the library configuration for the Google API client.
  */
-class Google_Config
+class Config
 {
   const GZIP_DISABLED = true;
   const GZIP_ENABLED = false;

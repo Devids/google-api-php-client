@@ -15,9 +15,8 @@
  * limitations under the License.
  */
 
-if (!class_exists('Google_Client')) {
-  require_once dirname(__FILE__) . '/../autoload.php';
-}
+namespace Google\Cache;
+use Google\Client;
 
 /**
  * A persistent storage class based on the APC cache, which is not
@@ -27,20 +26,20 @@ if (!class_exists('Google_Client')) {
  *
  * @author Chris Chabot <chabotc@google.com>
  */
-class Google_Cache_Apc extends Google_Cache_Abstract
+class Apc extends CacheAbstract
 {
   /**
    * @var Google_Client the current client
    */
   private $client;
 
-  public function __construct(Google_Client $client)
+  public function __construct(Client $client)
   {
     if (! function_exists('apc_add') ) {
       $error = "Apc functions not available";
 
       $client->getLogger()->error($error);
-      throw new Google_Cache_Exception($error);
+      throw new CacheException($error);
     }
 
     $this->client = $client;
@@ -89,7 +88,7 @@ class Google_Cache_Apc extends Google_Cache_Abstract
           'APC cache set failed',
           array('key' => $key, 'var' => $var)
       );
-      throw new Google_Cache_Exception("Couldn't store data");
+      throw new CacheException("Couldn't store data");
     }
 
     $this->client->getLogger()->debug(

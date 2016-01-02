@@ -15,16 +15,14 @@
  * limitations under the License.
  */
 
-if (!class_exists('Google_Client')) {
-  require_once dirname(__FILE__) . '/../autoload.php';
-}
+namespace Google\Logger;
 
 /**
  * Null logger based on the PSR-3 standard.
  *
  * This logger simply discards all messages.
  */
-class Google_Logger_Null extends Google_Logger_Abstract
+class Null extends LoggerAbstract
 {
   /**
    * {@inheritdoc}

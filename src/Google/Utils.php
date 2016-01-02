@@ -15,11 +15,13 @@
  * limitations under the License.
  */
 
+namespace Google;
+
 /**
  * Collection of static utility methods used for convenience across
  * the client library.
  */
-class Google_Utils
+class Utils
 {
   public static function urlSafeB64Encode($data)
   {
