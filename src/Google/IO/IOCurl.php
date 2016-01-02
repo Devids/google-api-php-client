@@ -86,7 +86,7 @@ class IOCurl extends IOAbstract
       curl_setopt($curl, CURLOPT_ENCODING, 'gzip,deflate');
     }
     
-    $options = $this->client->getClassConfig('Google_IO_Curl', 'options');
+    $options = $this->client->getClassConfig('Google\IO\IOCurl', 'options');
     if (is_array($options)) {
       $this->setOptions($options);
     }
@@ -113,7 +113,7 @@ class IOCurl extends IOAbstract
     if ($response === false) {
       $error = curl_error($curl);
       $code = curl_errno($curl);
-      $map = $this->client->getClassConfig('Google_IO_Exception', 'retry_map');
+      $map = $this->client->getClassConfig('\Google\IO\IOException', 'retry_map');
 
       $this->client->getLogger()->error('cURL ' . $error);
       throw new IOException($error, $code, null, $map);

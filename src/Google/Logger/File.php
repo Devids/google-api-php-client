@@ -54,19 +54,19 @@ class File extends LoggerAbstract
   {
     parent::__construct($client);
 
-    $file = $client->getClassConfig('Google_Logger_File', 'file');
+    $file = $client->getClassConfig('Google\Logger\File', 'file');
     if (!is_string($file) && !is_resource($file)) {
       throw new LoggerException(
           'File logger requires a filename or a valid file pointer'
       );
     }
 
-    $mode = $client->getClassConfig('Google_Logger_File', 'mode');
+    $mode = $client->getClassConfig('Google\Logger\File', 'mode');
     if (!$mode) {
       $this->mode = $mode;
     }
 
-    $this->lock = (bool) $client->getClassConfig('Google_Logger_File', 'lock');
+    $this->lock = (bool) $client->getClassConfig('Google\Logger\File', 'lock');
     $this->file = $file;
   }
 

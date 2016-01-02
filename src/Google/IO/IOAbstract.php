@@ -52,7 +52,7 @@ abstract class IOAbstract
   public function __construct(Client $client)
   {
     $this->client = $client;
-    $timeout = $client->getClassConfig('Google_IO_Abstract', 'request_timeout_seconds');
+    $timeout = $client->getClassConfig('Google\IO\IOAbstract', 'request_timeout_seconds');
     if ($timeout > 0) {
       $this->setTimeout($timeout);
     }

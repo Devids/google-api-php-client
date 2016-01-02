@@ -87,7 +87,7 @@ class Runner
       $action,
       array $arguments = array()
   ) {
-    $config = (array) $client->getClassConfig('Google_Task_Runner');
+    $config = (array) $client->getClassConfig('Google\Task\Runner');
 
     if (isset($config['initial_delay'])) {
       if ($config['initial_delay'] < 0) {

@@ -105,7 +105,7 @@ class REST
         );
 
         $map = $client->getClassConfig(
-            'Google_Service_Exception',
+            'Google\Service\Exception',
             'retry_map'
         );
       }

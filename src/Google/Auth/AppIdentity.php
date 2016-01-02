@@ -32,7 +32,7 @@ use Google\Http\Request;
  */
 class AppIdentity extends AuthAbstract
 {
-  const CACHE_PREFIX = "Google_Auth_AppIdentity::";
+  const CACHE_PREFIX = 'Google\Auth\AppIdentity::';
   private $client;
   private $token = false;
   private $tokenScopes = false;

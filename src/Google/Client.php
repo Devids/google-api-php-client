@@ -89,21 +89,21 @@ class Client
 
       if ($this->isAppEngine()) {
         // Automatically use Memcache if we're in AppEngine.
-        $config->setCacheClass('Google_Cache_Memcache');
+        $config->setCacheClass('Memcache');
       }
 
       if (version_compare(phpversion(), "5.3.4", "<=") || $this->isAppEngine()) {
         // Automatically disable compress.zlib, as currently unsupported.
-        $config->setClassConfig('Google_Http_Request', 'disable_gzip', true);
+        $config->setClassConfig('Google\Http\Request', 'disable_gzip', true);
       }
     }
 
     if ($config->getIoClass() == Config::USE_AUTO_IO_SELECTION) {
       if (function_exists('curl_version') && function_exists('curl_exec')
           && !$this->isAppEngine()) {
-        $config->setIoClass("Google_IO_Curl");
+        $config->setIoClass('Google\IO\IOCurl');
       } else {
-        $config->setIoClass("Google_IO_Stream");
+        $config->setIoClass('Google\IO\Stream');
       }
     }
 
@@ -594,7 +594,7 @@ class Client
           . " " . self::USER_AGENT_SUFFIX
           . $this->getLibraryVersion()
       );
-      if (!$this->getClassConfig("Google_Http_Request", "disable_gzip")) {
+      if (!$this->getClassConfig('Google\Http\Request', "disable_gzip")) {
         $request->enableGzip();
       }
       $request->maybeMoveParametersToBody();

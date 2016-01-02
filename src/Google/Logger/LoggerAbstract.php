@@ -122,17 +122,17 @@ abstract class LoggerAbstract
   public function __construct(Client $client)
   {
     $this->setLevel(
-        $client->getClassConfig('Google_Logger_Abstract', 'level')
+        $client->getClassConfig('Google\Logger\LoggerAbstract', 'level')
     );
 
-    $format = $client->getClassConfig('Google_Logger_Abstract', 'log_format');
+    $format = $client->getClassConfig('Google\Logger\LoggerAbstract', 'log_format');
     $this->logFormat = $format ? $format : self::DEFAULT_LOG_FORMAT;
 
-    $format = $client->getClassConfig('Google_Logger_Abstract', 'date_format');
+    $format = $client->getClassConfig('Google\Logger\LoggerAbstract', 'date_format');
     $this->dateFormat = $format ? $format : self::DEFAULT_DATE_FORMAT;
 
     $this->allowNewLines = (bool) $client->getClassConfig(
-        'Google_Logger_Abstract',
+        'Google\Logger\LoggerAbstract',
         'allow_newlines'
     );
   }
